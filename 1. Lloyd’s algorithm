@@ -1,0 +1,58 @@
+import time
+
+import numpy as np
+import random as rd
+import matplotlib.pyplot as plt
+# rd.seed(4)
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+
+cluster_A = np.array([(x1, x2) for x1, x2 in [(rd.randint(1, 50), rd.randint(1, 100)) for _ in range(100)]])
+cluster_B = np.array([(x1, x2) for x1, x2 in [(rd.randint(50, 100), rd.randint(1, 100)) for _ in range(100)]])
+
+COLORS = ['blue', 'green', 'yellow', 'cyan', 'magenta', 'black']
+ax1.scatter(cluster_A[:, 0], cluster_A[:, 1], color=COLORS[0])
+ax1.scatter(cluster_B[:, 0], cluster_B[:, 1], color=COLORS[1])
+
+data = np.vstack((cluster_A, cluster_B))
+ro = lambda x, m: np.mean((x - m)**2)
+
+M = np.mean(data, axis=0)   # вычисление средних по каждой координате
+D = np.var(data, axis=0)    # вычисление дисперсий по каждой координате
+K = 2   # число кластеров
+ma = [np.random.normal(M, np.sqrt(D / 10), 2) for _ in range(K)]
+
+plt.ion()
+plt.show()
+
+for step in range(10):
+    ax2.clear()
+    plt.title('Step {}'.format(step+1))
+    result = [[] for _ in range(K)]
+
+    for x in data:
+        r = [ro(x, m) for m in ma]
+        result[np.argmin(r)].append(x)
+
+    ma = [np.mean(xx, axis=0) for xx in result]
+
+    for index, value in enumerate(result):
+        xx = np.array(value)
+        ax2.scatter(xx[:, 0], xx[:, 1], color=COLORS[index])
+
+
+    mx = [m[0] for m in ma]
+    my = [m[1] for m in ma]
+    ax2.scatter(mx, my, color='r')
+
+    plt.draw()
+    plt.gcf().canvas.flush_events()
+    time.sleep(0.3)
+
+plt.ioff()
+
+for index, value in enumerate(result):
+    xx = np.array(value)
+    ax2.scatter(xx[:, 0], xx[:, 1], color=COLORS[index])
+
+plt.show()
